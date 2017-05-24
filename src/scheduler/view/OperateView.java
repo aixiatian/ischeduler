@@ -38,6 +38,7 @@ public class OperateView extends JFrame{
 	TipPanel tip;
 	RetryTaskPanel retry;
 	JLabel tbl ;
+	SearchTaskPanel serchp;
 	public OperateView(SchedulerContext sm){
 		this.sm = sm;
 		this.setSize(300, 520); 
@@ -47,7 +48,7 @@ public class OperateView extends JFrame{
 	      
 	      stp = new StartTaskPanel(sm);
 	      jtp.addTab("启动任务", stp);
-	      SearchTaskPanel serchp = new SearchTaskPanel(sm);
+	      serchp = new SearchTaskPanel(sm);
 	      jtp.addTab("查找项目", serchp);
 	      
 	      retry = new RetryTaskPanel(sm);
@@ -61,9 +62,9 @@ public class OperateView extends JFrame{
 	      this.setResizable(false);
 	      this.addWindowListener(new WindowAdapter(){
 	    	   public void windowClosing(WindowEvent we){
-	    		   TextArea tx = stp.getTip_area();
-	    		   if(tx != null && !"".equals(tx.getText()))
-	    			   SchedulerUtil.writeLog(tx.getText(), System.currentTimeMillis()+"_close");
+				   writeTip2Log(stp.getTip_area());
+				   writeTip2Log(retry.getTip_area());
+				   writeTip2Log(serchp.getTip_area());
 	    	   }
 	    	  });
 	      JToolBar tb = new JToolBar();
@@ -97,6 +98,11 @@ public class OperateView extends JFrame{
 				JOptionPane.showConfirmDialog(this, "确定切换到"+(sm.getHostIdx()==1?"测试":"正式")+"调度失败！","tip",-1);
 			}
 		}
+	}
+
+	public void writeTip2Log(TextArea tx){
+		if(tx != null && !"".equals(tx.getText()))
+			SchedulerUtil.writeLog(tx.getText(), System.currentTimeMillis()+"_close");
 	}
 	
 	public static void main(String[] args) {

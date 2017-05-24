@@ -466,7 +466,7 @@ public class SchedulerContext {
 	}
 	/***
 	 * 重试节点
-	 * @param nodeid
+	 * @param nodeInsID
 	 * @return
 	 */
 	String retryNode(String insGraphID,String nodeInsID){
@@ -999,8 +999,8 @@ public class SchedulerContext {
 				defids += ",";
 			defids += n.getId();
 		}
-		if(!SchedulerUtil.isStrNull(defids))
-			startNodeBetweenDates(num_per_time, task_timespan_sec, sleep_for_next, datefrom, dateto, defids, dwm);
+//		if(!SchedulerUtil.isStrNull(defids))
+//			startNodeBetweenDates(num_per_time, task_timespan_sec, sleep_for_next, datefrom, dateto, defids, dwm);
 	}
 
 	boolean isStop = false;
@@ -1139,7 +1139,7 @@ public class SchedulerContext {
 							String nodename = node.getString("name");
 							String ymd = getHHMMParamsFromNode(node);
 							if(SchedulerUtil.isStrNull(ymd)) {
-								ov.append("获取"+nodename+"运行参数失败，重试其他节点。");
+								ov.append("获取"+nodename+"运行参数失败，重试其他节点。\n");
 								continue;
 							}
 							if(taskmap.containsKey(nodename+"-"+ymd)) {
@@ -1149,22 +1149,24 @@ public class SchedulerContext {
 								}else if(t < retrytimes){
 									passOrRetry(true, "重试", insgraid, node,false);
 									taskmap.put(nodename+"-"+ymd, taskmap.get(nodename+"-"+ymd)+1);
+									ov.append("第"+(t+1)+"次重试->"+"项目："+name+",节点："+nodename+"，运行参数："+ymd+"\n");
 								}
 							}else {
 								passOrRetry(true, "重试", insgraid, node,false);
 								taskmap.put(nodename+"-"+ymd, 1);
+								ov.append("第1次重试->"+"项目："+name+",节点："+nodename+"，运行参数："+ymd+"\n");
 							}
 							Thread.sleep(2000);
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
-						ov.append(e.getMessage());
+						ov.append(e.getMessage()+"\n");
 					}
 				}
 				//TODO 重试3次仍然不通过的发邮件通知
 				checkAndSendMail("【重试"+retrytimes+"次仍失败节点】",errmap);
 			}else{
-				ov.append("没有符合条件的错误项目!");
+				ov.append("没有符合条件的错误项目!"+"\n");
 			}
 		}
 	}

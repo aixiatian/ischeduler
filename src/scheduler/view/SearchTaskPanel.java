@@ -28,7 +28,11 @@ public class SearchTaskPanel extends JPanel{
 	TextArea tip_area;
 	
 	Checkbox  r_influence;
-	
+
+	public TextArea getTip_area() {
+		return tip_area;
+	}
+
 	public SearchTaskPanel(SchedulerContext sm){
 		this.sm = sm;
 		this.setSize(300, 500);

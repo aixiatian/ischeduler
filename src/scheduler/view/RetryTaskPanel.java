@@ -29,7 +29,11 @@ SchedulerContext sm;
 	
 	JButton search;
 	JButton stop;
-	
+
+	public TextArea getTip_area() {
+		return tip_area;
+	}
+
 	TextArea tip_area;
 	
 	JRadioButton retryradio ;

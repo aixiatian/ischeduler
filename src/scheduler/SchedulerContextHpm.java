@@ -42,11 +42,12 @@ public class SchedulerContextHpm {
 		
 //		String name = "dw/mds/mds_mbportal_client_news_column";
 //		String name = "dw/mds/mds_mbportal_client_bhv_terminate";
-		String name = "dw/mds/mds_finance_simulate_trade_users";
+		String name = "dw/mds/mds_mbportal_client_bhv_event";
+//		String name = "dw/mds/mds_finance_simulate_trade_users";
 		String m = URLEncoder.encode(name);
 		String bd = sc.getSmallFiles(m);
 		Map<String,String> map = SmallFileItem.parseItemMap(bd);
-		sc.getPartitionInfo(sc, name, map,"e:/work/2017/05/08","");
+		sc.getPartitionInfo(sc, name, map,"e:/work/2017/05/24","org");
 	}
 	
 	public void getPartitionInfo(SchedulerContextHpm sc,String name,Map<String,String> map,String outPath,String otherpath){

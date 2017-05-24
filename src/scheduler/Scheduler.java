@@ -8,6 +8,7 @@ public class Scheduler {
 		LoginView lv = new LoginView();
 		/*OperateView ov = new OperateView();
 		lv.setOv(ov);*/
+		System.out.println("start...");
 		lv.setVisible(true);
 	}
 	
