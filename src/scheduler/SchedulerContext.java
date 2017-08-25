@@ -37,6 +37,8 @@ public class SchedulerContext {
 	public SchedulerContext(int hostIdx){
 		this.hostIdx = hostIdx;
 	}
+
+	public SchedulerContext(){}
 	
 	String token ;
 	public String username;
@@ -50,8 +52,12 @@ public class SchedulerContext {
 		,"scheduler.data.sina.com.cn:8080"};
 	
 	int hostIdx = 0;
-	
-	
+
+	boolean isStartTest = false;
+
+	public void setStartTest(boolean startTest) {
+		isStartTest = startTest;
+	}
 	TextArea ov;
 	
 	public TextArea getOv() {
@@ -148,8 +154,7 @@ public class SchedulerContext {
 		}else{
 			try {
 				JSONObject jo = new JSONObject(projs);
-				String success = jo.getString("status");
-				if (!"success".equals(success))
+				if (!SchedulerUtil.isJsonReturnSuccess(jo))
 					return -1;
 				JSONArray jarr = jo.getJSONArray("data");
 				int nodeCount = 0;
@@ -183,9 +188,8 @@ public class SchedulerContext {
 	public List<JSONObject> getResponseMap(String json){
 		try {
 			JSONObject jo = new JSONObject(json);
-			String success = jo.getString("status");
-			if(!"success".equals(success))
-				throw new RuntimeException("返回值状态->"+success);
+			if(!SchedulerUtil.isJsonReturnSuccess(jo))
+				throw new RuntimeException("返回值状态有误！");
 			JSONArray jarr = jo.getJSONArray("data");
 			if(jarr.length()>0){
 				List<JSONObject> items = new ArrayList<JSONObject>();
@@ -234,7 +238,7 @@ public class SchedulerContext {
 		return proj;
 	}
 	
-	public Map<String,Node> searchNodesForProjectIDs(String projid){
+	public Map<String,Node> searchNodesForProjectIDs(Project p){
 		String interface_url = "http://"+hosts[hostIdx]+Constants.REST_URL;
 		String res = "";
 		HttpPost post = new HttpPost(interface_url);
@@ -248,7 +252,7 @@ public class SchedulerContext {
 		post.addHeader("Origin", "http://"+hosts[hostIdx]);
 		post.addHeader("Referer", "http://"+hosts[hostIdx]+"/schedulerManager/");
 		post.addHeader("X-Requested-With", "XMLHttpRequest");
-		projid = projid.replace(",", "\",\"");
+		String projid = p.getId().replace(",", "\",\"");
 		System.out.println("项目id："+projid);
 		String data = "{";
 		data +="\"projectIDs\":[\""+projid+"\"],";
@@ -674,17 +678,6 @@ public class SchedulerContext {
 		}
 	}
 	
-	public boolean isDayWeekMonthExe(String src,Date date){
-		if(src == null || "".equals(src) || src.indexOf("day") > -1){
-			return true;
-		}else if (src.indexOf("week") > -1 && SchedulerUtil.getDateWeekDay(date) == 1){
-			return true;
-		}else if (src.indexOf("month") > -1 && SchedulerUtil.getDateDay(date) == 1){
-			return true;
-		}
-		return false;
-	}
-	
 	/***
 	 * 
 	 * @param num_per_time 每批任务个数
@@ -703,7 +696,7 @@ public class SchedulerContext {
 			int count = 0;
 			int canrunNum = num_per_time;
 			for (long i = timestart; i <= timeend; i=i+86400000) {
-				if(!isDayWeekMonthExe(dwm, new Date(i)))
+				if(!SchedulerUtil.isDayWeekMonthExe(dwm, new Date(i)))
 					continue;
 				if(count == 0){
 					
@@ -766,7 +759,7 @@ public class SchedulerContext {
 		projName = projName + "`";
 		if(projMap != null && projMap.containsKey(projName)){
 			Project p = projMap.get(projName);
-			Map<String,Node> nodeMap = searchNodesForProjectIDs(p.getId());
+			Map<String,Node> nodeMap = searchNodesForProjectIDs(p);
 			if(nodeName.contains("@")){
 				nodeName = nodeName.substring(0,nodeName.indexOf("@"));
 			}
@@ -864,7 +857,7 @@ public class SchedulerContext {
 	
 	public String getProjectNameByContent(String sh){
 		String res = "";
-		String pfname = hostIdx == 0 ? SchedulerUtil.FILE_PROJECT_SH_0 : SchedulerUtil.FILE_PROJECT_SH_1;
+		String pfname = SchedulerUtil.getLogPath(hostIdx);
 		res = getProjectNameFromFile(sh);
 		if(!SchedulerUtil.isStrNull(res)){
 			return res;
@@ -876,8 +869,7 @@ public class SchedulerContext {
 		int size = ps.size();
 		for (String pn : ps.keySet()) {
 			Project p = ps.get(pn);
-			String pid = p.getId();
-			Map<String,Node> nods = searchNodesForProjectIDs(pid);
+			Map<String,Node> nods = searchNodesForProjectIDs(p);
 			for (String nn : nods.keySet()) {
 				Node n = nods.get(nn);
 				String content = n.getContent();
@@ -886,7 +878,7 @@ public class SchedulerContext {
 					res += record + "\n";
 				}
 				String shn = content.substring(content.lastIndexOf("/")+1);
-				SchedulerUtil.writeLog(shn+";"+record, SchedulerUtil.PROJECT_SH_FILE_NAME+(hostIdx==1?"_formal":""));
+				SchedulerUtil.writeLog(shn+";"+record, SchedulerUtil.getFileName(hostIdx));
 			}
 			try {
 				Thread.sleep(2000);
@@ -901,7 +893,8 @@ public class SchedulerContext {
 	}
 	
 	public String getProjectNameFromFile(String sh){
-		String path = hostIdx == 0 ? SchedulerUtil.FILE_PROJECT_SH_0 : SchedulerUtil.FILE_PROJECT_SH_1;
+		String path = SchedulerUtil.getLogPath(hostIdx);
+//		String path = hostIdx == 0 ? SchedulerUtil.FILE_PROJECT_SH_0 : SchedulerUtil.FILE_PROJECT_SH_1;
 		BufferedReader br = null;
 		InputStreamReader isr = null;
 		String res = "";
@@ -985,8 +978,9 @@ public class SchedulerContext {
 	}
 	
 	public void startInfluencedNodes(int num_per_time,int task_timespan_sec,int sleep_for_next,String datefrom,String dateto,String projName,String nodeName,String dwm){
-		
+		ov.append("正在查找影响到的节点信息...\n");
 		Map<String,Node> nodes = getInfluncedNodes(projName, nodeName);
+		ov.append("查找完成，共找到"+nodes.size()+"个节点\n");
 		String defids = "";
 		for (String nn : nodes.keySet()) {
 			Node n = nodes.get(nn);
@@ -995,12 +989,15 @@ public class SchedulerContext {
 				System.out.println("非"+SchedulerUtil.loggroup+"-->"+dept);
 				continue;
 			}
-			if(!defids.equals(""))
+			if(!defids.equals("")) {
 				defids += ",";
+			}
 			defids += n.getId();
 		}
-//		if(!SchedulerUtil.isStrNull(defids))
-//			startNodeBetweenDates(num_per_time, task_timespan_sec, sleep_for_next, datefrom, dateto, defids, dwm);
+		if(!SchedulerUtil.isStrNull(defids)) {
+			ov.append("开始启动节点\n");
+			startNodeBetweenDates(num_per_time, task_timespan_sec, sleep_for_next, datefrom, dateto, defids, dwm);
+		}
 	}
 
 	boolean isStop = false;

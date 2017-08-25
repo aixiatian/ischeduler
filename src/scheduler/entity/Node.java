@@ -18,14 +18,14 @@ public class Node {
 		"nodes": [{
 			"createTime": 1416456247000,
 			"outputPath": [],
-			"desc": "生成wap用户表",
+			"desc": "",
 			"runUser": "loganalysis",
 			"runIP": "",
 			"updateTime": 1420703066465,
 			"svnUrl": "https://svn.intra.sina.com.cn/data/myprog/home_yz/loganalysis/mds/mbportal/mds_mbportal_apache/job/",
 			"params": "YYYYMMDD",
 			"depth": 1,
-			"nameCN": "生成wap用户表",
+			"nameCN": "",
 			"creator": "libo7",
 			"startTime": "04:00",
 			"id": "CE2501C9-7C74-4E87-BD45-493E9FBFDE18",
@@ -67,7 +67,8 @@ public class Node {
 	String deptID;
 	String warningCond;
 	String status;
-	
+	boolean online;
+
 	public static Map<String,Node> getNodeMapFromJson(String nodes){
 		Map<String,Node> nodeMap = new HashMap<String, Node>();
 		try {
@@ -99,6 +100,8 @@ public class Node {
 				n.setDeptID(o.getString("deptID"));
 				n.setWarningCond(o.getString("warningCond"));
 				n.setStatus(SchedulerUtil.getJsonObjectString(o, "status"));
+				String online = SchedulerUtil.getJsonObjectString(o, "online");
+				n.setOnline("".equals(online)?false:Boolean.getBoolean(online));
 				nodeMap.put(n.getName(), n);
 			}
 		} catch (JSONException e) {
@@ -106,7 +109,15 @@ public class Node {
 		}
 		return nodeMap;
 	}
-	
+
+	public boolean getOnline() {
+		return online;
+	}
+
+	public void setOnline(boolean online) {
+		this.online = online;
+	}
+
 	public String getStatus() {
 		return status;
 	}

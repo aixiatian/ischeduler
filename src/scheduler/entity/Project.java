@@ -52,12 +52,12 @@ public class Project {
 			for (int i = 0; i < ja.length(); i++) {
 				JSONObject o = ja.getJSONObject(i);
 				Project p = new Project();
-				p.setId(o.getString("id"));
-				p.setName(o.getString("name"));
-				p.setDesc(o.getString("desc"));
-				p.setParentId(o.getString("parentId"));
-				p.setDeptId(o.getString("deptId"));
-				p.setNodeCount(o.getString("nodeCount"));
+				p.setId(SchedulerUtil.getJsonObjectString(o,"id"));
+				p.setName(SchedulerUtil.getJsonObjectString(o,"name"));
+				p.setDesc(SchedulerUtil.getJsonObjectString(o,"desc"));
+				p.setParentId(SchedulerUtil.getJsonObjectString(o,"parentId"));
+				p.setDeptId(SchedulerUtil.getJsonObjectString(o,"deptId"));
+				p.setNodeCount(SchedulerUtil.getJsonObjectString(o,"nodeCount"));
 				p.setGraphInsId(SchedulerUtil.getJsonObjectString(o, "graphInsId"));
 				p.setCreateTime(SchedulerUtil.getJsonObjectString(o, "createTime"));
 				p.setCompTime(SchedulerUtil.getJsonObjectString(o, "compTime"));
@@ -66,7 +66,7 @@ public class Project {
 				p.setHours(SchedulerUtil.getJsonObjectString(o, "hours"));
 				p.setStartTime(SchedulerUtil.getJsonObjectString(o, "startTime"));
 				p.setEndTime(SchedulerUtil.getJsonObjectString(o, "endTime"));
-				projs.put(o.getString("name")+"`"+SchedulerUtil.getJsonObjectString(o, "startTime"), p);
+				projs.put(o.getString("name").replace(" ","")+"`"+SchedulerUtil.getJsonObjectString(o, "startTime"), p);
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();

@@ -46,7 +46,7 @@ public class SearchTaskPanel extends JPanel{
 		addSearchListener();
 		this.add(getTipPanel());
 	    tip_area.setEditable(false);
-	    sm.setOv(tip_area);
+		this.sm.setOv(tip_area);
 	}
 	
 	private TextArea getTipPanel(){
@@ -63,8 +63,8 @@ public class SearchTaskPanel extends JPanel{
 			public void actionPerformed(ActionEvent e) {
 				search.setEnabled(false);
 				try {
-						search(); 
-						
+//						search();
+						new Thread(new SearchThread(tip_area,shellName.getText(),r_influence.getState())).start();
 				} catch (Exception e2) {
 					e2.printStackTrace();
 					System.err.println(e2.getMessage());
@@ -89,6 +89,37 @@ public class SearchTaskPanel extends JPanel{
 				tip_area.setText("卧槽！找到了：\n"+sn.replace("|", "\n"));
 			else
 				tip_area.setText("看看是不是脚本名写错了??");
+		}
+	}
+
+	class SearchThread implements Runnable{
+		boolean iscreate = false;
+		String sh = "";
+		TextArea tip_area;
+
+		public SearchThread(TextArea tip_area,String sh,boolean iscreate){
+			this.iscreate = iscreate;
+			this.sh = sh;
+			this.tip_area = tip_area;
+		}
+
+		@Override
+		public void run() {
+			sm.setOv(tip_area);
+			if(SchedulerUtil.isStrNull(sh))
+				tip_area.setText("脚本名不能为空！");
+			if(!sh.endsWith(".sh"))
+				sh += ".sh";
+			if(iscreate){
+				String ss = sm.createStartTaskStr(sh);
+				tip_area.setText(ss);
+			}else{
+				String sn = sm.getProjectNameByContent(sh);
+				if(!SchedulerUtil.isStrNull(sn))
+					tip_area.setText("卧槽！找到了：\n"+sn.replace("|", "\n"));
+				else
+					tip_area.setText("看看是不是脚本名写错了??");
+			}
 		}
 	}
 	

@@ -28,13 +28,17 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import scheduler.entity.Node;
 
 public class SchedulerUtil {
 	
 	final public static String logPath = "D:/iScheduler_log/"; 
 	final public static String FILE_PROJECT_SH_0 = "D:/iScheduler_log/project_sh.txt"; 
 	final public static String FILE_PROJECT_SH_1 = "D:/iScheduler_log/project_sh_formal.txt"; 
+	final public static String FILE_PROJECT_SH_2 = "D:/iScheduler_log/project_sh_newhpm.txt";
 	final public static String PROJECT_SH_FILE_NAME = "project_sh";
+	final public static String PROJECT_SH_FILE_NAME_FORMAL = "project_sh_formal";
+	final public static String PROJECT_SH_FILE_NAME_NEWHPM = "project_sh_newhpm";
 	//部门id
 	final public static String loggroup = "17";//17:日志分析组，6:仓库小组，14:suda小组，3:线上小组
 	static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -225,7 +229,7 @@ public class SchedulerUtil {
 			return null;
 		try {
 			JSONObject jo = new JSONObject(str);
-			if(!"success".equals(jo.getString(statusnm)))
+			if(!isJsonReturnSuccess(jo))
 				return null;
 			System.out.println(jo.getString(arrname));
 			return jo.getJSONArray(arrname);
@@ -234,7 +238,11 @@ public class SchedulerUtil {
 		}
 		return null;
 	}
-	
+
+	public static boolean isJsonReturnSuccess(JSONObject jo){
+		return "success".equals(getJsonObjectString(jo,"status")) || "000".equals(getJsonObjectString(jo,"code"));
+	}
+
 	public static String getJsonObjectString(JSONObject o ,String name){
 		String res = "";
 		try {
@@ -261,5 +269,59 @@ public class SchedulerUtil {
 	
 	public static boolean isLoggroup(String name) {
 		return loggroup.equals(name);
+	}
+
+	public static boolean isDayWeekMonthExe(String src,Date date){
+		if(src == null || "".equals(src) || src.indexOf("day") > -1){
+			return true;
+		}else if (src.indexOf("week") > -1 && SchedulerUtil.getDateWeekDay(date) == 1){
+			return true;
+		}else if (src.indexOf("month") > -1 && SchedulerUtil.getDateDay(date) == 1){
+			return true;
+		}
+		return false;
+	}
+
+	public static boolean isTest(Node node){
+		if(node == null){
+			return false;
+		}
+		return !node.getOnline();
+	}
+
+	public static String getCurrentScheduler(int idx){
+		if(idx == 0){
+			return "测试";
+		}else if (idx == 1){
+			return "正式";
+		}else if (idx == 2){
+			return "newhpm";
+		}else{
+			return "unknown";
+		}
+	}
+
+	public static String getLogPath(int idx){
+		if(idx == 0){
+			return FILE_PROJECT_SH_0;
+		}else if (idx == 1){
+			return FILE_PROJECT_SH_1;
+		}else if (idx == 2){
+			return FILE_PROJECT_SH_2;
+		}else{
+			return "unknown";
+		}
+	}
+
+	public static String getFileName(int idx){
+		if(idx == 0){
+			return PROJECT_SH_FILE_NAME;
+		}else if (idx == 1){
+			return PROJECT_SH_FILE_NAME_FORMAL;
+		}else if (idx == 2){
+			return PROJECT_SH_FILE_NAME_NEWHPM;
+		}else{
+			return "unknown";
+		}
 	}
 }

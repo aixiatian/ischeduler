@@ -28,8 +28,8 @@ public class SchedulerContextHpm {
 	public String username;
 	String pwd;
 	CloseableHttpClient client = null;
-	//0 :≤‚ ‘
-	//1 :’˝ Ω
+	//0 :ÊµãËØï
+	//1 :Ê≠£Âºè
 //	static String[] hosts = new String[]{
 //		"yz2154.hadoop.data.sina.com.cn:80"
 //		,"scheduler.data.sina.com.cn:8080"};
@@ -38,16 +38,17 @@ public class SchedulerContextHpm {
 	
 	public static void main(String[] args) {
 		SchedulerContextHpm sc = new SchedulerContextHpm();
-		sc.loginhpm("dongkai3", "@#dk0905");
+		sc.loginhpm("dongkai3", "dk@#0213");
 		
 //		String name = "dw/mds/mds_mbportal_client_news_column";
 //		String name = "dw/mds/mds_mbportal_client_bhv_terminate";
-		String name = "dw/mds/mds_mbportal_client_bhv_event";
-//		String name = "dw/mds/mds_finance_simulate_trade_users";
-		String m = URLEncoder.encode(name);
-		String bd = sc.getSmallFiles(m);
-		Map<String,String> map = SmallFileItem.parseItemMap(bd);
-		sc.getPartitionInfo(sc, name, map,"e:/work/2017/05/24","org");
+//		String name = "dw/mds/mds_mbportal_client_bhv_event";
+////		String name = "dw/mds/mds_finance_simulate_trade_users";
+//		String m = URLEncoder.encode(name);
+//		String bd = sc.getSmallFiles(m);
+//		Map<String,String> map = SmallFileItem.parseItemMap(bd);
+//		sc.getPartitionInfo(sc, name, map,"e:/work/2017/08/21","org");
+		sc.startNode();
 	}
 	
 	public void getPartitionInfo(SchedulerContextHpm sc,String name,Map<String,String> map,String outPath,String otherpath){
@@ -74,6 +75,30 @@ public class SchedulerContextHpm {
 		}
 		SchedulerUtil.writeFile(outPath+"/partitionInfo", res.toString());
 	}
+
+	public String getLt() throws IOException {
+		/***
+		 *
+		Accept-Encoding:gzip, deflate, sdch
+		Accept-Language:zh-CN,zh;q=0.8
+		Connection:keep-alive
+		Cookie:SINAGLOBAL=61.135.152.133_1494554422.830881; UOR=mobile.data.sina.com.cn,cj.sina.com.cn,; SGUID=1495418972644_41103942; SUB=_2AkMufscBf8NxqwJRmP8czG_kaI9wywHEieKYIjbaJRMyHRl-yD9jqkdZtRAVTGTNhn0151kFhrWbj1X-tHbEoA..; SUBP=0033WrSXqPxfM72-Ws9jqgMF55529P9D9Wh1zKlpj_ZXVfD_T2g9725w; U_TRS1=00000055.3b3c2398.59310420.e88aa75b; vjuids=72aa1aaf4.15cd2ed5afa.0.83a11837; lxlrtst=1501462726_o; ULV=1503397902933:34:12:5:61.135.152.133_1503397901.10660:1503397900913; lxlrttp=1502410412; vjlast=1498199023.1503398044.11; auth_type=erp
+		Host:cas.erp.sina.com.cn
+		Referer:http://newdp.hadoop.data.sina.com.cn/hpm/index.php/scheduler/projects
+		User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36
+		 */
+		HttpGet get = new HttpGet("http://cas.erp.sina.com.cn/cas/login?ext=&service=http://newdp.hadoop.data.sina.com.cn/hpm/index.php/scheduler/project_instances");
+		get.addHeader("Accept", "image/jpeg, application/x-ms-application, image/gif, application/xaml+xml, image/pjpeg, application/x-ms-xbap, application/vnd.ms-excel, application/vnd.ms-powerpoint, application/msword, */*");
+		get.addHeader("Accept-Encoding", "gzip, deflate");
+		get.addHeader("Accept-Language", "zh-CN");
+		get.addHeader("Connection", "Keep-Alive");
+		get.addHeader("Host", "cas.erp.sina.com.cn");
+		get.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36");
+		CloseableHttpResponse resp = client.execute(get);
+		String body = EntityUtils.toString(resp.getEntity(), "utf-8");
+		String lt = body.split("name=\"lt\" value=\"")[1];
+		return lt;
+	}
 	
 	public boolean loginhpm(String username,String pwd) {
 		client = HttpClients.createDefault();
@@ -82,23 +107,24 @@ public class SchedulerContextHpm {
 		if(SchedulerUtil.isStrNull(this.pwd))
 			this.pwd = pwd;
 		boolean success = false;
-		HttpGet get = new HttpGet("http://cas.erp.sina.com.cn/cas/login?ext=&service=http://dp.hadoop.data.sina.com.cn/hpm/index.php/scheduler/project_instances");
-		get.addHeader("Accept", "image/jpeg, application/x-ms-application, image/gif, application/xaml+xml, image/pjpeg, application/x-ms-xbap, application/vnd.ms-excel, application/vnd.ms-powerpoint, application/msword, */*");
-		get.addHeader("Accept-Encoding", "gzip, deflate");
-		get.addHeader("Accept-Language", "zh-CN");
-		get.addHeader("Connection", "Keep-Alive");
-		get.addHeader("Host", "cas.erp.sina.com.cn");
-		get.addHeader("User-Agent", "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; InfoPath.3; .NET4.0E)");
-		
+//		HttpGet get = new HttpGet("http://cas.erp.sina.com.cn/cas/login?ext=&service=http://newdp.hadoop.data.sina.com.cn/hpm/index.php/scheduler/project_instances");
+//		get.addHeader("Accept", "image/jpeg, application/x-ms-application, image/gif, application/xaml+xml, image/pjpeg, application/x-ms-xbap, application/vnd.ms-excel, application/vnd.ms-powerpoint, application/msword, */*");
+//		get.addHeader("Accept-Encoding", "gzip, deflate");
+//		get.addHeader("Accept-Language", "zh-CN");
+//		get.addHeader("Connection", "Keep-Alive");
+//		get.addHeader("Host", "cas.erp.sina.com.cn");
+//		get.addHeader("User-Agent", "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; InfoPath.3; .NET4.0E)");
+//
 		try {
-			CloseableHttpResponse resp = client.execute(get);
-			String body = EntityUtils.toString(resp.getEntity(), "utf-8");
-			String lt = body.split("name=\"lt\" value=\"")[1];
-			lt = lt.substring(0,lt.indexOf("\""));
-			
+//			CloseableHttpResponse resp = client.execute(get);
+//			String body = EntityUtils.toString(resp.getEntity(), "utf-8");
+//			String lt = body.split("name=\"lt\" value=\"")[1];
+//			lt = lt.substring(0,lt.indexOf("\""));
+			String body = "";
 //			System.out.println("lt->"+lt);
-			
-			HttpPost post = new HttpPost("https://cas.erp.sina.com.cn/cas/login?ext=&service=http://dp.hadoop.data.sina.com.cn/hpm/index.php/scheduler/project_instances");
+			String lt = getLt();
+
+			HttpPost post = new HttpPost("https://cas.erp.sina.com.cn/cas/login?ext=&service=http://newdp.hadoop.data.sina.com.cn/hpm/index.php/scheduler/project_instances");
 			post.addHeader("Accept", "image/jpeg, application/x-ms-application, image/gif, application/xaml+xml, image/pjpeg, application/x-ms-xbap, application/vnd.ms-excel, application/vnd.ms-powerpoint, application/msword, */*");
 			post.addHeader("Accept-Encoding", "gzip, deflate");
 			post.addHeader("Accept-Language", "zh-CN");
@@ -106,7 +132,7 @@ public class SchedulerContextHpm {
 			post.addHeader("Connection", "Keep-Alive");
 			post.addHeader("Content-Type", "application/x-www-form-urlencoded");
 			post.addHeader("Host", "cas.erp.sina.com.cn");
-			post.addHeader("Referer", "https://cas.erp.sina.com.cn/cas/login?ext=&service=http://dp.hadoop.data.sina.com.cn/hpm/index.php/scheduler/project_instances");
+			post.addHeader("Referer", "https://cas.erp.sina.com.cn/cas/login?ext=&service=http://newdp.hadoop.data.sina.com.cn/hpm/index.php/scheduler/project_instances");
 			post.addHeader("User-Agent", "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; InfoPath.3; .NET4.0E)");
 			
 			Map<String,String> parameterMap = new HashMap<String,String>();
@@ -143,7 +169,19 @@ public class SchedulerContextHpm {
 				body = EntityUtils.toString(presp1.getEntity(), "utf-8");
 				
 //				System.out.println("login_body->"+body);
-				
+//				String[] secondUrlPara = body.split("'");
+//				String secondLoginurl = secondUrlPara[1];
+//				HttpGet getsec = new HttpGet(secondLoginurl);
+//				getsec.addHeader("Accept", "image/jpeg, application/x-ms-application, image/gif, application/xaml+xml, image/pjpeg, application/x-ms-xbap, application/vnd.ms-excel, application/vnd.ms-powerpoint, application/msword, */*");
+//				getsec.addHeader("Accept-Encoding", "gzip, deflate");
+//				getsec.addHeader("Accept-Language", "zh-CN");
+//				getsec.addHeader("Connection", "Keep-Alive");
+//				getsec.addHeader("Host", "dp.hadoop.data.sina.com.cn");
+//				getsec.addHeader("User-Agent", "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; InfoPath.3; .NET4.0E)");
+//
+//				CloseableHttpResponse secresp = client.execute(getsec);
+//				String bodysec = EntityUtils.toString(secresp.getEntity(), "utf-8");
+
 				getTokenStr(loginUrl);
 				
 //				System.out.println(token);
@@ -203,6 +241,42 @@ public class SchedulerContextHpm {
 			token = loginurl.substring(loginurl.indexOf("ticket=")+7,loginurl.indexOf("&"));
 		}
 		return token;
+	}
+
+	public void startNode(){
+		try {
+			HttpPost post = new HttpPost("http://newdp.hadoop.data.sina.com.cn/hpm/index.php/scheduler/rest");
+			post.addHeader("Accept", "image/jpeg, application/x-ms-application, image/gif, application/xaml+xml, image/pjpeg, application/x-ms-xbap, application/vnd.ms-excel, application/vnd.ms-powerpoint, application/msword, */*");
+			post.addHeader("Accept-Encoding", "gzip, deflate");
+			post.addHeader("Accept-Language", "zh-CN");
+			post.addHeader("Cache-Control", "no-cache");
+			post.addHeader("Connection", "Keep-Alive");
+			post.addHeader("Content-Type", "application/x-www-form-urlencoded");
+			post.addHeader("Host", "newdp.hadoop.data.sina.com.cn");
+			post.addHeader("Referer", "http://newdp.hadoop.data.sina.com.cn/hpm/index.php/scheduler/projects");
+			post.addHeader("User-Agent", "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; InfoPath.3; .NET4.0E)");
+
+//			post = new HttpPost("http://10.39.2.131:8111/interface/ins_graph/start_by_defnode");
+			Map<String,String> parameterMap = new HashMap<String,String>();
+			parameterMap.put("defIDs", "03E7FDF9-E76A-44C7-B6B1-8132EF228D8A");
+			parameterMap.put("paramMap", "{\"YYYYMMDD\":\"20170611\",\"test\":\"1\"}");
+			parameterMap.put("rdurl", "/interface/ins_graph/start_by_defnode");
+//			parameterMap.put("ssn","200720");
+//			parameterMap.put("userName","dongkai3");
+//			parameterMap.put("token",token);
+
+			UrlEncodedFormEntity postEntity = new UrlEncodedFormEntity(getParam(parameterMap), "UTF-8");
+			post.setEntity(postEntity);
+
+			CloseableHttpResponse presp = client.execute(post);
+			int code = presp.getStatusLine().getStatusCode();
+			String body = EntityUtils.toString(presp.getEntity(), "utf-8");
+			System.out.println(code + "-->" + body);
+		}catch (Exception e){
+
+		}
+
+
 	}
 	
 }

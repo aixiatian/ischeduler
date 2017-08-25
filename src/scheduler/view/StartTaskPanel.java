@@ -59,6 +59,7 @@ public class StartTaskPanel extends JPanel{
 	Checkbox  r_week;
 	Checkbox  r_month;
 	Checkbox  r_influence;
+	Checkbox  r_hpmtest;
 //	ButtonGroup bg;
 	
 	public TextArea getTip_area() {
@@ -97,8 +98,14 @@ public class StartTaskPanel extends JPanel{
 	      this.add(t_nodeName = SchedulerUtil.getJTextField("",96, 160, 180, 20), null); 
 //	      this.add(l_influence = SchedulerUtil.getJLabel("启动影响到的节点", 10, 190, 120, 18));
 	      r_influence = new Checkbox("启动影响到的节点", false);
-		  r_influence.setBounds(13, 185, 210, 20);
+		  r_influence.setBounds(13, 185, 120, 20);
 		  this.add(r_influence);
+		  if(this.sm.getHostIdx() == 2){
+			  r_hpmtest = new Checkbox("启动下线节点", false);
+			  r_hpmtest.setBounds(150, 185, 120, 20);
+			  this.add(r_hpmtest);
+		  }
+
 	      this.add(b_start = SchedulerUtil.getButton("开始",10, 210, 70, 27), null); 
 	      setStartBtnListener();
 	      this.add(b_stop = SchedulerUtil.getButton("停止",90, 210, 70, 27), null);
@@ -124,13 +131,19 @@ public class StartTaskPanel extends JPanel{
 		JLabel j = new JLabel("执行周期:");
 		j.setBounds(10, 20, 20, 20);
 		jp.add(j);
-		r_day = new Checkbox("天", true);
+		r_day = new Checkbox();
+		r_day.setLabel("天");
+		r_day.setState(true);
 		r_day.setBounds(50, 20, 20, 30);
 		jp.add(r_day);
-		r_week = new Checkbox("周", false);
+		r_week = new Checkbox();
+		r_week.setLabel("周");
+		r_week.setState(false);
 		r_week.setBounds(100, 20, 20, 30);
 		jp.add(r_week);
-		r_month = new Checkbox("月", false);
+		r_month = new Checkbox();
+		r_month.setLabel("月");
+		r_month.setState(false);
 		r_month.setBounds(150, 20, 20, 30);
 		jp.add(r_month);
 		/*bg = new ButtonGroup();
@@ -173,7 +186,11 @@ public class StartTaskPanel extends JPanel{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				int timer = SchedulerUtil.str2int(t_timer.getText(), 0);
-				
+				if(sm.getHostIdx() == 2){
+					if(r_hpmtest.getState()){
+						sm.setStartTest(true);
+					}
+				}
 				String projName = t_projName.getText();
 				String nodeName = t_nodeName.getText();
 				System.out.println(getSelectedDWM());
@@ -225,15 +242,16 @@ public class StartTaskPanel extends JPanel{
 					if (timer > 0) {
 						waitForTime(timer);
 					}
+					boolean isTest = SchedulerUtil.isTest(node);
 					if(startThread == null)
-						startThread = new Thread(new ProgressStart(tip_area,node.getId(),hour));
+						startThread = new Thread(new ProgressStart(tip_area,node.getId(),hour,isTest));
 					System.out.println(startThread.getState());
 					if(startThread.getState() == Thread.State.TIMED_WAITING)
 						startThread.resume();
 					else if(Thread.State.NEW == startThread.getState())
 						startThread.start();
 					else{
-						startThread = new Thread(new ProgressStart(tip_area,node.getId(),hour));
+						startThread = new Thread(new ProgressStart(tip_area,node.getId(),hour,isTest));
 						startThread.start();
 					}
 				}
@@ -258,10 +276,13 @@ public class StartTaskPanel extends JPanel{
 		TextArea ov;
 		String defids;
 		String hour;
-		public ProgressStart(TextArea ov,String defids,String hour){
+		boolean isTest;
+
+		public ProgressStart(TextArea ov,String defids,String hour,boolean isTest){
 			this.ov = ov;
 			this.defids = defids;
 			this.hour = hour;
+			this.isTest = isTest;
 		}
 		@Override
 		public void run() {
@@ -290,6 +311,7 @@ public class StartTaskPanel extends JPanel{
 	class ProgressStartMuti implements Runnable{
 		TextArea ov;
 		String projName;
+
 		public ProgressStartMuti(TextArea ov,String projName){
 			this.ov = ov;
 			this.projName = projName;

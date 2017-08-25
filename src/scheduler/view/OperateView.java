@@ -82,7 +82,10 @@ public class OperateView extends JFrame{
 	      });
 	      tb.add(bt,BorderLayout.WEST);
 	      tb.addSeparator();
-	      tb.add(tbl = new JLabel((sm.getHostIdx()==1?"正式":"测试")+"调度-(当前用户:"+sm.username+")"),BorderLayout.EAST);
+	      tb.add(tbl = new JLabel((SchedulerUtil.getCurrentScheduler(sm.getHostIdx()))+"调度-(当前用户:"+sm.username+")"),BorderLayout.EAST);
+	      if(sm.getHostIdx() == 2){
+			  bt.setVisible(false);
+		  }
 	      this.add(tb,BorderLayout.SOUTH);
 	}
 	

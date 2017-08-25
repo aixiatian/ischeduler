@@ -16,6 +16,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
 import scheduler.SchedulerContext;
+import scheduler.SchedulerContextNewHpm;
 import scheduler.SchedulerUtil;
 
 
@@ -31,6 +32,7 @@ public class LoginView extends JFrame {
 	ButtonGroup bg;
 	JRadioButton nom;
 	JRadioButton test;
+	JRadioButton newhpm;
 	SchedulerContext sm;
 	OperateView ov ;
 
@@ -97,11 +99,16 @@ public class LoginView extends JFrame {
 	public boolean login(){
 		String username = userText.getText();
 		String pwd = pwdText.getText();
-		int idx = 0;
+		int idx = 2;
 		if(nom.isSelected())
 			idx = 1;
-		
-		sm = new SchedulerContext(idx);
+		else if(test.isSelected()){
+			idx = 0;
+		}
+		if(idx == 2){
+			sm = new SchedulerContextNewHpm(idx);
+		}else
+			sm = new SchedulerContext(idx);
 		boolean suc = sm.login(username, pwd);
 		if(!suc)
 			errLabel.setText("µ«¬º ß∞‹!");
@@ -117,15 +124,21 @@ public class LoginView extends JFrame {
 	private JPanel getRadioGroup(){
 		JPanel jp = new JPanel(new FlowLayout());
 		jp.setSize(300, 30);
-		test = new JRadioButton("≤‚ ‘", true);
+		test = new JRadioButton("≤‚ ‘", false);
 		test.setBounds(34, 20, 20, 30);
 		jp.add(test);
+
 		nom = new JRadioButton("’˝ Ω", false);
 		nom.setBounds(60, 20, 20, 30);
 		jp.add(nom);
+
+		newhpm = new JRadioButton("newhpm", true);
+		newhpm.setBounds(85, 20, 20, 30);
+		jp.add(newhpm);
 		bg = new ButtonGroup();
 		bg.add(test);
 		bg.add(nom);
+		bg.add(newhpm);
 		jp.setBounds(34, 20, 200, 30);
 		return jp;
 	}
