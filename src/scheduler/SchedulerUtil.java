@@ -240,7 +240,9 @@ public class SchedulerUtil {
 	}
 
 	public static boolean isJsonReturnSuccess(JSONObject jo){
-		return "success".equals(getJsonObjectString(jo,"status")) || "000".equals(getJsonObjectString(jo,"code"));
+		return "success".equals(getJsonObjectString(jo,"status"))
+				|| "000".equals(getJsonObjectString(jo,"code"))
+				|| "success".equals(getJsonObjectString(jo,"desc"));
 	}
 
 	public static String getJsonObjectString(JSONObject o ,String name){

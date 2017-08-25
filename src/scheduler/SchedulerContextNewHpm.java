@@ -1,5 +1,6 @@
 package scheduler;
 
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -12,6 +13,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import scheduler.entity.Node;
 import scheduler.entity.Project;
+import scheduler.entity.SmallFileItem;
 
 import java.awt.*;
 import java.io.IOException;
@@ -43,12 +45,12 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
     public static void main(String[] args) {
         SchedulerContextNewHpm scn = new SchedulerContextNewHpm();
         try {
-            scn.login("","");
+            scn.login("dongkai3","dk@#0213");
             String defid = "33D634F0-F9C3-47A7-85ED-2F8A9BEF2127";
             String datestr = "20170823";
             boolean test = true;
 //            scn.startNode(datestr,defid,test);
-            scn.startByDefnode(datestr,defid);
+//            scn.startByDefnode(datestr,defid);
 //            Map<String,Project> projs = scn.getAllProjects();
 //            System.out.println(projs.size());
 //            Node s = scn.getDefids("log_mbportal_wap_basic_hour","702022_finance_singleurl_hour");
@@ -57,6 +59,13 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
 //            System.out.println(res);
 //            Map<String,Node> nds = scn.getInfluncedNodes("loganalysis_ods_mbportal_suda","mr_ods_mbportal_suda");
 //            System.out.println(nds.size());
+
+            String name = "dw/mds/mds_mbportal_client_bhv_event";
+		    String m = URLEncoder.encode(name);
+//            scn.getSmallFiles(m);
+            String bd = scn.getSmallFiles(m);
+            Map<String,String> map = SmallFileItem.parseItemMap(bd);
+            scn.getPartitionInfo(name, map,"e:/work/2017/08/25","org");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -751,6 +760,62 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
         }catch (Exception e){
             return null;
         }
+    }
+
+    String getSmallFiles(String name){
+        String url = "http://"+host+"/hpm/common/js/AdminLTE/dirtee/data/data.php?";
+        url += "name="+name;
+        url += "&count=1000";
+        url += "&owner=loganalysis";
+        url += "&method="+Constants.method_smallFileNum;
+
+        HttpGet get = new HttpGet(url);
+
+        get.addHeader("Accept", "application/json, text/javascript, */*; q=0.01");
+        get.addHeader("Accept-Encoding", "gzip, deflate, sdch");
+        get.addHeader("Accept-Language", "zh-CN,zh;q=0.8,en;q=0.6");
+        get.addHeader("Connection", "keep-alive");
+        get.addHeader("Host", "dp.hadoop.data.sina.com.cn");
+        get.addHeader("Referer", "http://dp.hadoop.data.sina.com.cn/hpm/index.php/statistic/personal_small/detail/loganalysis/50");
+        get.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.111 Safari/537.36");
+        get.addHeader("X-Requested-With", "XMLHttpRequest");
+
+
+        String body = "";
+        try {
+            CloseableHttpResponse resp = client.execute(get);
+            body = EntityUtils.toString(resp.getEntity(),"utf-8");
+        } catch (ClientProtocolException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return body;
+    }
+    String encodestr = "/";
+    public void getPartitionInfo(String name,Map<String,String> map,String outPath,String otherpath){
+        String base = encodestr;
+        if(!SchedulerUtil.isStrNull(otherpath))
+            base = encodestr+otherpath;
+        TreeMap<String,String> resmap = new TreeMap<String,String>();
+        StringBuffer res = new StringBuffer();
+        Map<String,String> maps = null;
+        for (String key : map.keySet()) {
+            if (!base.equals("/")) {
+                String tem = name + encodestr + key + base;
+                String bd = getSmallFiles(URLEncoder.encode(tem));
+                maps = SmallFileItem.parseItemMap(bd);
+                for (String k : maps.keySet()) {
+                    resmap.put(key + "/channel=" + k,maps.get(k));
+                }
+            } else
+                resmap.put(key ,map.get(key));
+        }
+
+        for (String key : resmap.keySet()) {
+            res.append(key + "\n");
+        }
+        SchedulerUtil.writeFile(outPath+"/partitionInfo", res.toString());
     }
 
 }
