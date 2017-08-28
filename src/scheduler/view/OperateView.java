@@ -1,7 +1,6 @@
 package scheduler.view;
 
-import java.awt.BorderLayout;
-import java.awt.TextArea;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -18,7 +17,7 @@ import javax.swing.JToolBar;
 import scheduler.SchedulerContext;
 import scheduler.SchedulerUtil;
 
-public class OperateView extends JFrame{
+public class OperateView extends JFrame implements ActionListener{
 	private static final long serialVersionUID = 1L;
 	
 	JTabbedPane jtp;
@@ -87,6 +86,9 @@ public class OperateView extends JFrame{
 			  bt.setVisible(false);
 		  }
 	      this.add(tb,BorderLayout.SOUTH);
+		this.setIconImage(Toolkit.getDefaultToolkit().getImage(
+				getClass().getClassLoader().getResource("sina.png")));
+//		this.setIconImage(Toolkit.getDefaultToolkit().getImage("res/sina.png"));
 	}
 	
 	public void swithSys(){
@@ -113,5 +115,9 @@ public class OperateView extends JFrame{
 		ta.setEditable(false);
 		new OperateView(null).setVisible(true);
 	}
-	
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+
+	}
 }

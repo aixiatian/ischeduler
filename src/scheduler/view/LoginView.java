@@ -1,7 +1,6 @@
 package scheduler.view;
 
-import java.awt.Color;
-import java.awt.FlowLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -71,6 +70,8 @@ public class LoginView extends JFrame {
 	    			  login();
 	    	}
 		});
+		this.setIconImage(Toolkit.getDefaultToolkit().getImage(
+				getClass().getClassLoader().getResource("sina.png")));
 	}
 	
 	public static void main(String[] args) {
