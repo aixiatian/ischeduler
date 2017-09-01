@@ -339,19 +339,20 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
         post.addHeader("Accept", "application/json, text/javascript, */*; q=0.01");
         post.addHeader("Accept-Encoding", "gzip, deflate");
         post.addHeader("Accept-Language", "zh-CN,zh;q=0.8");
-        post.addHeader("Proxy-Connection", "keep-alive");
+        post.addHeader("Connection", "keep-alive");
         post.addHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
         post.addHeader("Host", host);
         post.addHeader("Origin", "http://"+host);
-//        post.addHeader("Referer", "http://"+hosts[hostIdx]+"/schedulerManager/");
+        String projid = p.getId();
+        String count = p.getNodeCount();
+        post.addHeader("Referer", "http://"+host+"/hpm/index.php/scheduler/project_flow?id="+projid+"&nodeCount="+count+"&from=list");
         post.addHeader("X-Requested-With", "XMLHttpRequest");
         post.addHeader("User-Agent", UA);
-        String projid = p.getId();
-        projid = projid.replace(",", "\",\"");
+//        projid = projid.replace(",", "\",\"");
         System.out.println("ÏîÄ¿id£º"+projid);
         Map<String,Node> nodeMap = null;
         try {
-            String entity = "projectIDs="+projid+"&nodeCount="+p.getNodeCount()+"&rdurl="+ URLEncoder.encode(searchNodesForProjectIDs,"utf-8");
+            String entity = "projectIDs="+projid+"&nodeCount="+count+"&rdurl="+ URLEncoder.encode(searchNodesForProjectIDs,"utf-8");
 
             post.setEntity(new StringEntity(entity));
             CloseableHttpResponse resp = client.execute(post);

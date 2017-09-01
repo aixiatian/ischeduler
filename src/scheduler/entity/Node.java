@@ -101,7 +101,7 @@ public class Node {
 				n.setWarningCond(o.getString("warningCond"));
 				n.setStatus(SchedulerUtil.getJsonObjectString(o, "status"));
 				String online = SchedulerUtil.getJsonObjectString(o, "online");
-				n.setOnline("".equals(online)?false:Boolean.getBoolean(online));
+				n.setOnline("".equals(online)?false:Boolean.valueOf(online));
 				nodeMap.put(n.getName(), n);
 			}
 		} catch (JSONException e) {

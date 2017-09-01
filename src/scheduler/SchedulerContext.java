@@ -874,6 +874,9 @@ public class SchedulerContext {
 				Node n = nods.get(nn);
 				String content = n.getContent();
 				String record = "项目名："+p.getName()+"|任务名："+n.getName();
+				if(hostIdx == 2){
+					record = record + "|状态：" + (n.getOnline()?"上线":"下线");
+				}
 				if(content.contains(sh)){
 					res += record + "\n";
 				}
