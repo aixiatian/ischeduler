@@ -60,6 +60,7 @@ public class StartTaskPanel extends JPanel{
 	Checkbox  r_month;
 	Checkbox  r_influence;
 	Checkbox  r_hpmtest;
+	Checkbox  r_orderexe;
 //	ButtonGroup bg;
 	
 	public TextArea getTip_area() {
@@ -90,8 +91,10 @@ public class StartTaskPanel extends JPanel{
 	      t_dateto.setToolTipText("yyyyMMdd");
 	      this.add(l_timer_before = SchedulerUtil.getJLabel("定时：",10, 121, 50, 18), null); 
 	      this.add(t_timer = SchedulerUtil.getJTextField("",96, 121, 50, 18), null); 
-	      this.add(l_timer_end = SchedulerUtil.getJLabel("分钟后开始执行",150, 121, 100, 18), null); 
-	      
+	      this.add(l_timer_end = SchedulerUtil.getJLabel("分钟",150, 121, 40, 18), null);
+//		  r_orderexe = new Checkbox("按序执行", false);
+//		  r_orderexe.setBounds(195, 121, 70, 18);
+//		  this.add(r_orderexe);
 	      this.add(l_projName = SchedulerUtil.getJLabel("项目名：",10, 140, 70, 18), null); 
 	      this.add(t_projName = SchedulerUtil.getJTextField("",96, 140, 180, 20), null); 
 	      this.add(l_nodeName = SchedulerUtil.getJLabel("任务名：",10, 160, 70, 18), null); 
@@ -190,6 +193,9 @@ public class StartTaskPanel extends JPanel{
 					if(r_hpmtest.getState()){
 						sm.setStartTest(true);
 					}
+				}
+				if(r_orderexe != null) {
+					sm.setOrderExe(r_orderexe.getState());
 				}
 				String projName = t_projName.getText();
 				String nodeName = t_nodeName.getText();

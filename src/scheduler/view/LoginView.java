@@ -35,6 +35,11 @@ public class LoginView extends JFrame {
 	SchedulerContext sm;
 	OperateView ov ;
 
+	ButtonGroup bg_authtype;
+	JRadioButton email;
+	JRadioButton erp;
+	JRadioButton radius;
+
 	public OperateView getOv() {
 		return ov;
 	}
@@ -56,8 +61,9 @@ public class LoginView extends JFrame {
 	      this.add(userLabel = SchedulerUtil.getJLabel("UserName",34, 60, 70, 18), null); 
 	      this.add(userText = SchedulerUtil.getJTextField("",96, 60, 160, 20), null); 
 	      this.add(pwdLabel = SchedulerUtil.getJLabel("Password",34, 80, 70, 18), null); 
-	      this.add(pwdText = SchedulerUtil.getPwdTextField("",96, 80, 160, 20), null); 
-	      this.add(loginButton = SchedulerUtil.getButton("Login",103, 130, 71, 27), null); 
+	      this.add(pwdText = SchedulerUtil.getPwdTextField("",96, 80, 160, 20), null);
+	      this.add(getAuthTypeRadioGroup());
+	      this.add(loginButton = SchedulerUtil.getButton("Login",103, 140, 71, 27), null);
 	      setLoginBtnListener();
 	      this.setTitle("Schadualer");
 	      this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -108,6 +114,11 @@ public class LoginView extends JFrame {
 		}
 		if(idx == 2){
 			sm = new SchedulerContextNewHpm(idx);
+			if(erp.isSelected()){
+				sm.setAuth_type("erp");
+			}else if(radius.isSelected()){
+				sm.setAuth_type("radius");
+			}
 		}else
 			sm = new SchedulerContext(idx);
 		boolean suc = sm.login(username, pwd);
@@ -141,6 +152,31 @@ public class LoginView extends JFrame {
 		bg.add(nom);
 		bg.add(newhpm);
 		jp.setBounds(34, 20, 200, 30);
+		return jp;
+	}
+
+	private JPanel getAuthTypeRadioGroup(){
+		int y = 100;
+		JPanel jp = new JPanel(new FlowLayout());
+		jp.setSize(300, 30);
+		email = new JRadioButton("” œ‰", false);
+		email.setBounds(30, y, 20, 30);
+		email.setSelected(true);
+		jp.add(email);
+
+		erp = new JRadioButton("ERP", false);
+		erp.setBounds(60, y, 20, 30);
+		jp.add(erp);
+
+		radius = new JRadioButton("Œ¢∂‹", true);
+		radius.setBounds(85, y, 20, 30);
+		jp.add(radius);
+		bg = new ButtonGroup();
+		bg.add(email);
+		bg.add(erp);
+		bg.add(radius);
+
+		jp.setBounds(30, y, 200, 30);
 		return jp;
 	}
 }

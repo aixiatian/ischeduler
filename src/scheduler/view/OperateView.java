@@ -93,6 +93,7 @@ public class OperateView extends JFrame implements ActionListener{
 	
 	public void swithSys(){
 		int r = JOptionPane.showConfirmDialog(this, "确定切换到"+(sm.getHostIdx()==1?"测试":"正式")+"调度吗？","tip",JOptionPane.OK_CANCEL_OPTION);
+
 		if(r == 0){
 			try {
 				
@@ -111,9 +112,14 @@ public class OperateView extends JFrame implements ActionListener{
 	}
 	
 	public static void main(String[] args) {
-		JTextArea ta = new JTextArea();
-		ta.setEditable(false);
-		new OperateView(null).setVisible(true);
+//		JTextArea ta = new JTextArea();
+//		ta.setEditable(false);
+//		OperateView ov = new OperateView(null);
+		Object[] ops = new Object[]{"new","old"};
+		int r = JOptionPane.showOptionDialog(null,"message","title",1,1,null,ops,1);
+		System.out.println(r);
+//		JOptionPane.showInputDialog("input");
+//		JOptionPane.showInternalInputDialog(ov,"test");
 	}
 
 	@Override

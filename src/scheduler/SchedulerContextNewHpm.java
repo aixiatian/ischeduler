@@ -10,6 +10,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import scheduler.entity.Node;
 import scheduler.entity.Project;
@@ -18,8 +19,10 @@ import scheduler.entity.SmallFileItem;
 import java.awt.*;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
 
 
 /**
@@ -45,10 +48,16 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
     public static void main(String[] args) {
         SchedulerContextNewHpm scn = new SchedulerContextNewHpm();
         try {
-            scn.login("dongkai3","dk@#0213");
-            String defid = "33D634F0-F9C3-47A7-85ED-2F8A9BEF2127";
-            String datestr = "20170823";
-            boolean test = true;
+//            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//            System.out.println(sdf.format(1509351644803l));
+            String username = "dongkai3";
+            String pwd = "dk@#0905";
+            scn.login(username,pwd);
+            String s = scn.postUserDep();
+            System.out.println(s);
+//            String defid = "33D634F0-F9C3-47A7-85ED-2F8A9BEF2127";
+//            String datestr = "20170823";
+//            boolean test = true;
 //            scn.startNode(datestr,defid,test);
 //            scn.startByDefnode(datestr,defid);
 //            Map<String,Project> projs = scn.getAllProjects();
@@ -57,15 +66,23 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
 //            System.out.println(s);
 //            String res = scn.getProjectsForStatus(STATUS_FAIL);
 //            System.out.println(res);
-//            Map<String,Node> nds = scn.getInfluncedNodes("loganalysis_ods_mbportal_suda","mr_ods_mbportal_suda");
-//            System.out.println(nds.size());
+           /* Map<String,Node> nds = scn.getInfluncedNodes("loganalysis_ods_video_playlog","ods_chnl_video_playlog");
+            System.out.println(nds.size());
+            for (String s : nds.keySet()
+                 ) {
+                Node n = nds.get(s);
+                if(n.getOnline()){
 
-            String name = "dw/mds/mds_mbportal_client_bhv_event";
+                    System.out.println(s + "\t\t\t" + n.getContent());
+                }
+            }*/
+
+            /*String name = "dw/mds/mds_mbportal_client_bhv_event";
 		    String m = URLEncoder.encode(name);
 //            scn.getSmallFiles(m);
             String bd = scn.getSmallFiles(m);
             Map<String,String> map = SmallFileItem.parseItemMap(bd);
-            scn.getPartitionInfo(name, map,"e:/work/2017/08/25","org");
+            scn.getPartitionInfo(name, map,"e:/work/2017/09/04","org");*/
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -82,12 +99,6 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
         String secbody = secondGet(loginUrl);
         loginUrl = secbody.substring(secbody.indexOf("\"")+1, secbody.lastIndexOf("\""));
         lastLogin(loginUrl);
-        /*String lastbody = */
-//        String userbody = postUserDep(loginUrl);
-//        System.out.println(userbody);
-//        String listbody = postListPages();
-//        System.out.println(listbody);
-//        System.out.println(token);
         return true;
     }
 
@@ -132,7 +143,8 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
         post.addHeader("User-Agent", UA);
 
         Map<String,String> parameterMap = new HashMap<String,String>();
-        parameterMap.put("auth_type", "ldap");
+//        parameterMap.put("auth_type", "ldap");
+        parameterMap.put("auth_type", auth_type);
         parameterMap.put("ext", "");
         parameterMap.put("lt", lt);
         parameterMap.put("password", pwd);
@@ -196,7 +208,8 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
 
     }
 
-    public String postUserDep(String refer) throws IOException {
+    public String postUserDep() throws IOException {
+        String refer = "http://"+host+"/hpm/index.php/scheduler/project_instances";
         HttpPost post = new HttpPost("http://"+host+"/hpm/index.php/scheduler/depts/userDept");
         post.addHeader("Accept", "application/json, text/javascript, */*; q=0.01");
         post.addHeader("Accept-Encoding", "gzip, deflate");
@@ -265,6 +278,9 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
         return "";
     }
 
+    Map<String,String> cache = new HashMap<String,String>();
+
+
     public String startByDefnode(String dateStr,String defids){
         try {
 
@@ -293,20 +309,77 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
             sb.append("rdurl="+URLEncoder.encode(startByDefnode,"UTF-8"));
 
             String entity = sb.toString();
-            System.out.println(entity);
+//            System.out.println(entity);
             post.setEntity(new StringEntity(entity));
             CloseableHttpResponse presp = client.execute(post);
             int code = presp.getStatusLine().getStatusCode();
             String body = EntityUtils.toString(presp.getEntity(), "utf-8");
-            body = body.replace("{", "");
-            body = body.replace("}", "");
-            body = body.replace(",\"", "\n");
-            body = body.replace("\"", "");
-            System.out.println(code + "-->" + body);
-            return body;
+//            body = body.replace("{", "");
+//            body = body.replace("}", "");
+//            body = body.replace(",\"", "\n");
+//            body = body.replace("\"", "");
+//            System.out.println(code + "-->" + body);
+            String res = getReturnMessage(body);
+            if(res != null){
+                refreshCacheMap(dateStr,defids);
+            }
+            return res;
         }catch (Exception e){
             return e.getMessage();
         }
+    }
+
+    public void refreshCacheMap(String dateStr,String defids){
+        if(isOrderExe){
+            String[] dsa = defids.split(",");
+            for (int i = 0; i < dsa.length; i++) {
+
+                cache.put(dsa[i]+"`"+dateStr,"");
+            }
+        }
+    }
+
+    private void initCacheMap() throws JSONException {
+        String[] status = new String[]{STATUS_FAIL,STATUS_RUNNING};
+        for(int h = 0;h<status.length;h++){
+
+            String projRunning = getProjectsForStatus(status[h]);
+            List<JSONObject> items = getResponseMap(projRunning);
+            for (int i = 0; i < items.size(); i++) {
+                JSONObject item = items.get(i);
+//                String startTime = item.getString("startTime");
+//                if(Long.parseLong(startTime) < startTaskTime){
+//                    continue;
+//                }
+                String projid = item. getString("projectId");
+                String insgraid = item.getString("graphInsId");
+                String nodesStr = getNodesForProject(projid, insgraid);
+                JSONObject nodesJs = new JSONObject(nodesStr);
+                JSONObject data = nodesJs.getJSONObject("data");
+                JSONArray nodes = data.getJSONArray("nodes");
+                for (int j=0;j<nodes.length();j++){
+                    JSONObject o = nodes.getJSONObject(j);
+                    String date = o.getJSONObject("paramMap").getString("YYYYMMDD");
+                    String id = o.getString("id");
+                    cache.put(id + "`" + date,"");
+                }
+            }
+        }
+    }
+
+    public String getReturnMessage(String json) throws Exception {
+        JSONObject jo = new JSONObject(json);
+        String code = SchedulerUtil.getJsonObjectString(jo,"code");
+//        String id = "";
+        String date = "";
+        String res = null;
+        if("000".equals(code)){
+            JSONObject data = jo.getJSONObject("data");
+//            id = SchedulerUtil.getJsonObjectString(data,"id");
+            date = SchedulerUtil.format2ymdhms(SchedulerUtil.getJsonObjectString(data,"createTime"));
+            res = "提交时间："+date+"\n";
+        }
+        return res;
     }
 
     public Node getDefids(String projName, String nodeName)  {
@@ -349,7 +422,7 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
         post.addHeader("X-Requested-With", "XMLHttpRequest");
         post.addHeader("User-Agent", UA);
 //        projid = projid.replace(",", "\",\"");
-        System.out.println("项目id："+projid);
+//        System.out.println("项目id："+projid);
         Map<String,Node> nodeMap = null;
         try {
             String entity = "projectIDs="+projid+"&nodeCount="+count+"&rdurl="+ URLEncoder.encode(searchNodesForProjectIDs,"utf-8");
@@ -397,7 +470,7 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
         parameterMap.put("iColumns","8");
         parameterMap.put("sColumns","id,name,desc,deptId,startTime,nodeCount,status,");
         parameterMap.put("iDisplayStart","0");
-        parameterMap.put("iDisplayLength","20");
+        parameterMap.put("iDisplayLength","200");
         parameterMap.put("mDataProp_0","id");
         parameterMap.put("bSortable_0","false");
         parameterMap.put("mDataProp_1","name");
@@ -467,6 +540,16 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
         return "";
     }
 
+    private  int heartBeat(int exp) throws InterruptedException {
+        Thread.sleep(exp * 60 * 1000);
+        int nodecount = getRunningTaskNum();
+        return nodecount;
+    }
+
+    private int heartBeat() throws InterruptedException {
+        return heartBeat(1);
+    }
+
     String retryNode(String insGraphID,String nodeInsID) {
         return setStatus(insGraphID,nodeInsID,STATUS_RETRY);
     }
@@ -474,7 +557,8 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
     String passNode(String insGraphID,String nodeInsID) {
         return setStatus(insGraphID,nodeInsID,STATUS_SUCCESS);
     }
-
+    boolean isMonitorStart = false;
+    boolean monitorStop = false;
     public void startNodeBetweenDates(int num_per_time,int task_timespan_sec,int sleep_for_next,String datefrom,String dateto,String defids,String dwm,String hour) {
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
@@ -483,6 +567,11 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
             long timeend = sdf.parse(dateto).getTime();
             int count = 0;
             int canrunNum = num_per_time;
+            startTaskTime = System.currentTimeMillis();
+            initCacheMap();
+            if(!isMonitorStart){
+                new Thread(new MonitorThread()).start();
+            }
             for (long i = timestart; i <= timeend; i = i + 86400000) {
                 if (!SchedulerUtil.isDayWeekMonthExe(dwm, new Date(i)))
                     continue;
@@ -499,14 +588,16 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
                 }
                 if (canrunNum <= 0 || canrunNum > num_per_time) {
                     i = i - 86400000;
-                    Thread.sleep(sleep_for_next * 60 * 1000);
-                    int nodecount = getRunningTaskNum();
+//                    Thread.sleep(sleep_for_next * 60 * 1000);
+//                    int nodecount = getRunningTaskNum();
+                    int nodecount = heartBeat(sleep_for_next);
                     canrunNum = num_per_time - nodecount;
                     continue;
                 }
                 String dateStr = sdf.format(i);
                 if (!SchedulerUtil.isStrNull(hour))
                     dateStr += "@" + hour;
+                waitForLastSuccess(defids,i,sdf);
                 String res = startByDefnode(dateStr, defids);
                 ov.append(dateStr + "成功：\n" + res + "\n");
                 Thread.sleep(task_timespan_sec * 1000);
@@ -516,9 +607,66 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
             ov.append("----------------任务完成-------------------" + count);
             String tt = ov.getText();
             SchedulerUtil.writeLog(tt, defids);
-
+            monitorStop = true;
         } catch (Exception e) {
             ov.append(e.getMessage());
+        }
+    }
+
+    private void waitForLastSuccess(String defids,long i,SimpleDateFormat sdf) throws InterruptedException {
+        while (true){
+            if(isOrderExe && cache.containsKey(defids + "`" + sdf.format(i-86400000))){
+                ov.append("等待"+sdf.format(i-86400000)+"执行完毕！");
+                heartBeat();
+            }else{
+                break;
+            }
+        }
+    }
+
+    public class MonitorThread implements Runnable{
+
+        @Override
+        public void run() {
+            try {
+                while(!monitorStop) {
+                    execute(STATUS_FAIL);
+                    execute(STATUS_SUCCESS);
+                }
+            }catch (Exception e){
+                ov.append("\n"+e.getMessage());
+            }
+        }
+
+        private void execute(String stauts) throws JSONException, ParseException {
+            String projRunning = getProjectsForStatus(stauts);
+            List<JSONObject> items = getResponseMap(projRunning);
+            for (int i = 0; i < items.size(); i++) {
+                JSONObject item = items.get(i);
+                String startTime = item.getString("startTime");
+                if(Long.parseLong(startTime) < startTaskTime){
+                    continue;
+                }
+                String projid = item. getString("projectId");
+                String insgraid = item.getString("graphInsId");
+                String nodesStr = getNodesForProject(projid, insgraid);
+                JSONObject nodesJs = new JSONObject(nodesStr);
+                JSONObject data = nodesJs.getJSONObject("data");
+                JSONArray nodes = data.getJSONArray("nodes");
+                for (int j=0;j<nodes.length();j++){
+                    JSONObject o = nodes.getJSONObject(i);
+                    String date = o.getJSONObject("paramMap").getString("YYYYMMDD");
+                    String id = o.getString("id");
+                    if(STATUS_SUCCESS.equals(stauts)&&cache.containsKey(id + "`" + date)){
+                        cache.remove(id + "`" + date);
+                    }else if(STATUS_FAIL.equals(stauts)&&cache.containsKey(id + "`" + date)){
+                        String info = readyMap.get(id);
+                        String[] infoarr = info.split("`");
+                        String content = "项目名："+infoarr[0]+"\n任务名："+infoarr[1]+"\n日期："+date;
+                        SchedulerUtil.sendMail(username,"【顺序启动节点失败】",content);
+                    }
+                }
+            }
         }
     }
 
@@ -546,10 +694,12 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
         return -1;
     }
 
+    Map<String,String> readyMap = new HashMap<String,String>();
+
     public void startNodeBetweenDates(int num_per_time,int task_timespan_sec,int sleep_for_next,String datefrom,String dateto,String defids,String dwm){
         startNodeBetweenDates(num_per_time, task_timespan_sec, sleep_for_next, datefrom, dateto, defids, dwm, null);
     }
-
+    long startTaskTime = 0l;
     public void startMutiTaskBetweenDates(int num_per_time,int task_timespan_sec,int sleep_for_next,String datefrom,String dateto,String infos,String dwm) {
         if(SchedulerUtil.isStrNull(infos))
             return;
@@ -558,6 +708,7 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
             return;
         String defidsStr = "";
         boolean isHasHour = false;
+        startTaskTime = System.currentTimeMillis();
         for (int i = 0; i < projs.length; i++) {
             String proj = projs[i].trim();
             if(SchedulerUtil.isStrNull(proj)) {
@@ -606,6 +757,7 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
                         String defids = node.getId();
                         if(!"".equals(defidsStr)){
                             defidsStr += ","+defids;
+                            readyMap.put(defids,info[0]+"`"+tkname);
                         }
                         else{
                             defidsStr += defids;
@@ -699,7 +851,7 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
             parameterMap.put("iColumns","6");
             parameterMap.put("sColumns","depth,name,runIP,content,deptID,");
             parameterMap.put("iDisplayStart","0");
-            parameterMap.put("iDisplayLength","20");
+            parameterMap.put("iDisplayLength","100");
             parameterMap.put("mDataProp_0","depth");
             parameterMap.put("bSortable_0","false");
             parameterMap.put("mDataProp_1","name");

@@ -44,6 +44,9 @@ public class SchedulerContext {
 	public String username;
 	String pwd;
 	String ssn;
+
+	String auth_type= "ldap";
+
 	CloseableHttpClient client = null;
 	//0 :测试
 	//1 :正式
@@ -54,6 +57,13 @@ public class SchedulerContext {
 	int hostIdx = 0;
 
 	boolean isStartTest = false;
+	boolean isOrderExe = false;
+	public void setAuth_type(String auth_type) {
+		this.auth_type = auth_type;
+	}
+	public void setOrderExe(boolean orderExe) {
+		isOrderExe = orderExe;
+	}
 
 	public void setStartTest(boolean startTest) {
 		isStartTest = startTest;
@@ -877,10 +887,10 @@ public class SchedulerContext {
 				if(hostIdx == 2){
 					record = record + "|状态：" + (n.getOnline()?"上线":"下线");
 				}
-				if(content.contains(sh)){
+				String shn = content.substring(content.lastIndexOf("/")+1);
+				if(shn.equals(sh)){
 					res += record + "\n";
 				}
-				String shn = content.substring(content.lastIndexOf("/")+1);
 				SchedulerUtil.writeLog(shn+";"+record, SchedulerUtil.getFileName(hostIdx));
 			}
 			try {
@@ -1166,7 +1176,7 @@ public class SchedulerContext {
 				//TODO 重试3次仍然不通过的发邮件通知
 				checkAndSendMail("【重试"+retrytimes+"次仍失败节点】",errmap);
 			}else{
-				ov.append("没有符合条件的错误项目!"+"\n");
+//				ov.append("没有符合条件的错误项目!"+"\n");
 			}
 		}
 	}
@@ -1249,6 +1259,9 @@ public class SchedulerContext {
 				continue;
 			}
 			//rpt_kpi_mobileportal_722081.sh;项目名：loganalysis_mbportal_client_sports|任务名：hive_mobileportal_722081
+			if(proj.contains("状态")){
+				proj = proj.substring(0,proj.lastIndexOf("|"));
+			}
 			String projname = proj.substring(proj.indexOf("：")+1,proj.indexOf("|"));
 			String tskname = proj.substring(proj.indexOf("|任务名：")+5);
 			if(res.containsKey(projname)){

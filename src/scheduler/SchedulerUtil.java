@@ -42,7 +42,8 @@ public class SchedulerUtil {
 	//部门id
 	final public static String loggroup = "17";//17:日志分析组，6:仓库小组，14:suda小组，3:线上小组
 	static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-	
+	static SimpleDateFormat sdfsm = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+
 	public static JButton getButton(String text,int x,int y,int width,int height){
 		JButton jb = new JButton(text);
 		jb.setBounds(x, y, width, height); 
@@ -79,6 +80,30 @@ public class SchedulerUtil {
 		String cpstr = "," + str + ",";
 		return cpsrc.contains(cpstr);
 	}
+
+	public static String format2ymd(String datestr){
+		if(isStrNull(datestr)){
+			return datestr;
+		}
+		try{
+			return sdf.format(new Date(Long.parseLong(datestr)));
+		}catch (Exception e){
+			return datestr;
+		}
+	}
+
+	public static String format2ymdhms(String datestr){
+		if(isStrNull(datestr)){
+			return datestr;
+		}
+		try{
+			return sdfsm.format(new Date(Long.parseLong(datestr)));
+		}catch (Exception e){
+			return datestr;
+		}
+	}
+
+
 	
 	public static boolean isStrNull(String str){
 		return str == null || "".equals(str);
