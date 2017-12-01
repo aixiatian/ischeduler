@@ -29,7 +29,9 @@ import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import scheduler.entity.Node;
-
+/***
+ * Created by dongkai3 on 2016/3/7.
+ */
 public class SchedulerUtil {
 	
 	final public static String logPath = "D:/iScheduler_log/"; 

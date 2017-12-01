@@ -12,7 +12,9 @@ import javax.swing.JTextField;
 
 import scheduler.SchedulerContext;
 import scheduler.SchedulerUtil;
-
+/***
+ * Created by dongkai3 on 2016/3/7.
+ */
 public class SearchTaskPanel extends JPanel{
 
 	private static final long serialVersionUID = 1L;

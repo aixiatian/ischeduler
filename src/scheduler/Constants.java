@@ -1,6 +1,8 @@
 package scheduler;
 
-
+/***
+ * Created by dongkai3 on 2016/3/7.
+ */
 interface Constants {
 	
 	public static final String REST_URL = 					"/schedulerManager/index.php/interface/rest";
@@ -41,6 +43,7 @@ interface Constants {
 	public static final String HPM_INFLUNCE_URL = "/interface/def_graph/by_following_nodes_ids_proj_pages";
 	public static final String PAGE_AFFACTED_PROJECTS_URL = "/hpm/index.php/scheduler/project_affected";
 	public static final String BY_FOLLOWING_PROJECTS_IDS_URL = "/interface/def_graph/by_following_proj_ids";
+	public static final String DEL_NODE_URL = "/interface/destroy_def_graph";
 
 
 }

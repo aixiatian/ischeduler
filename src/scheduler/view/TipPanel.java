@@ -9,7 +9,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import scheduler.SchedulerUtil;
-
+/***
+ * Created by dongkai3 on 2016/3/7.
+ */
 public class TipPanel  extends JPanel{
 	private static final long serialVersionUID = -3630264512989390870L;
 

@@ -20,6 +20,9 @@ import scheduler.SchedulerContext;
 import scheduler.SchedulerUtil;
 import scheduler.entity.Node;
 
+/***
+ * Created by dongkai3 on 2016/3/7.
+ */
 public class StartTaskPanel extends JPanel{
 	
 	private static final long serialVersionUID = 1L;
@@ -235,8 +238,8 @@ public class StartTaskPanel extends JPanel{
 					}
 					else{
 						String content = node.getContent();
-						content = content.substring(content.indexOf("/")+1);
-						
+						content = content.substring(content.lastIndexOf("/")+1);
+
 						int r = -1;
 						if(r_influence.getState())
 							r = JOptionPane.showConfirmDialog(tip_area, "确认要执行所填任务及其影响到的节点吗？","温馨提示",0);
@@ -244,7 +247,9 @@ public class StartTaskPanel extends JPanel{
 							r = JOptionPane.showConfirmDialog(tip_area, "确认要执行"+content+"吗？","温馨提示",0);
 						if(r != 0)
 							return;
-					}	
+
+						tip_area.append("项目名:"+projName+"\n任务名:"+nodeName+"\n脚本名:"+content+"\n");
+					}
 					if (timer > 0) {
 						waitForTime(timer);
 					}
@@ -306,9 +311,9 @@ public class StartTaskPanel extends JPanel{
 				sm.startInfluencedNodes(num_per_time, task_timespan_sec, sleep_for_next, datefrom, dateto, t_projName.getText(), t_nodeName.getText(), getSelectedDWM());
 			l_status.setText("已完成");
 			l_status.setForeground(Color.GREEN);
-			String projName = t_projName.getText();
-			String nodeName = t_nodeName.getText();
-			String content = "项目名："+projName+"<br>任务名："+nodeName+"<br>"+ov.getText().replace("\n", "<br>");
+//			String projName = t_projName.getText();
+//			String nodeName = t_nodeName.getText();
+			String content = ov.getText().replace("\n", "<br>");
 			SchedulerUtil.sendMail(sm.username, "启动调度任务完成", content);
 		}
 		

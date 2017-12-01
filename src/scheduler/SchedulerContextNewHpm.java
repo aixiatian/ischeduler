@@ -26,6 +26,7 @@ import java.util.List;
 
 
 /**
+ * 适配新调度程序
  * Created by dongkai3 on 2017/8/23.
  */
 public class SchedulerContextNewHpm extends SchedulerContext implements Constants{
@@ -51,7 +52,7 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
 //            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 //            System.out.println(sdf.format(1509351644803l));
             String username = "dongkai3";
-            String pwd = "dk@#0905";
+            String pwd = "xxxxxx";
             scn.login(username,pwd);
             String s = scn.postUserDep();
             System.out.println(s);
@@ -300,7 +301,16 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
 //            if(defids.contains(","))
 //                defids = defids.replaceAll(",", "\",\"");
             sb.append("defIDs="+URLEncoder.encode(defids,"UTF-8")).append("&");
-            String paraymd = "YYYYMMDD="+dateStr+";HH=";
+            String hour = "";
+            String date = dateStr;
+            if(dateStr.contains("@")){
+                date = dateStr.substring(0,dateStr.indexOf("@"));
+                hour = dateStr.substring(dateStr.indexOf("@")+1);
+            }
+            String paraymd = "YYYYMMDD="+date+";HH=";
+            if(!hour.equals("")){
+                paraymd += hour;
+            }
             sb.append("paramMap="+ URLEncoder.encode(paraymd,"UTF-8"));
             if(isStartTest)
                 sb.append(URLEncoder.encode(";test=1","UTF-8")).append("&");
@@ -345,6 +355,9 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
 
             String projRunning = getProjectsForStatus(status[h]);
             List<JSONObject> items = getResponseMap(projRunning);
+            if(items == null){
+                break;
+            }
             for (int i = 0; i < items.size(); i++) {
                 JSONObject item = items.get(i);
 //                String startTime = item.getString("startTime");
@@ -568,9 +581,11 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
             int count = 0;
             int canrunNum = num_per_time;
             startTaskTime = System.currentTimeMillis();
-            initCacheMap();
-            if(!isMonitorStart){
-                new Thread(new MonitorThread()).start();
+            if(isOrderExe){
+                initCacheMap();
+                if(!isMonitorStart){
+                    new Thread(new MonitorThread()).start();
+                }
             }
             for (long i = timestart; i <= timeend; i = i + 86400000) {
                 if (!SchedulerUtil.isDayWeekMonthExe(dwm, new Date(i)))
@@ -604,7 +619,8 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
                 count++;
                 canrunNum--;
             }
-            ov.append("----------------任务完成-------------------" + count);
+            ov.append("------------任务完成--------------\n");
+            ov.append("启动任务数："+count+"\n");
             String tt = ov.getText();
             SchedulerUtil.writeLog(tt, defids);
             monitorStop = true;
@@ -614,8 +630,8 @@ public class SchedulerContextNewHpm extends SchedulerContext implements Constant
     }
 
     private void waitForLastSuccess(String defids,long i,SimpleDateFormat sdf) throws InterruptedException {
-        while (true){
-            if(isOrderExe && cache.containsKey(defids + "`" + sdf.format(i-86400000))){
+        while (isOrderExe && true){
+            if(cache.containsKey(defids + "`" + sdf.format(i-86400000))){
                 ov.append("等待"+sdf.format(i-86400000)+"执行完毕！");
                 heartBeat();
             }else{

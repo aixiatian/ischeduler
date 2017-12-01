@@ -31,7 +31,10 @@ import org.json.JSONObject;
 
 import scheduler.entity.Node;
 import scheduler.entity.Project;
-
+/***
+ * 调度基础上下文
+ * Created by dongkai3 on 2016/3/7.
+ */
 public class SchedulerContext {
 	
 	public SchedulerContext(int hostIdx){
@@ -741,7 +744,8 @@ public class SchedulerContext {
 				}*/
 					
 			}
-			ov.append("----------------任务完成-------------------"+count);
+			ov.append("------------任务完成--------------\n");
+			ov.append("启动任务数："+count+"\n");
 			String tt = ov.getText();
 			SchedulerUtil.writeLog(tt, defids);
 			
@@ -809,7 +813,7 @@ public class SchedulerContext {
 	public static void main(String[] args){
 		int hostIdx = 0;
 		SchedulerContext sc = new SchedulerContext(hostIdx);
-//		sc.login("dongkai3", "0905dk@#");
+//		sc.login("dongkai3", "xxxxx");
 //		String str = sc.createStartTaskStr("rpt_kpi_videoportal_601030.sh,rpt_kpi_videoportal_601031.sh");
 //		System.out.println(str);
 		//重试、跳过
@@ -1130,6 +1134,9 @@ public class SchedulerContext {
 					}
 					try {
 						String name = item.getString("name");
+						if(name.contains("@")){
+							name = name.substring(0,name.indexOf("@"));
+						}
 						if (!SchedulerUtil.isStrIn(projname, name))
 							continue;
 

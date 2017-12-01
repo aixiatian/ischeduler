@@ -21,7 +21,9 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 import scheduler.entity.SmallFileItem;
-
+/***
+ * Created by dongkai3 on 2016/3/7.
+ */
 public class SchedulerContextHpm {
 	
 	String token ;
@@ -38,7 +40,7 @@ public class SchedulerContextHpm {
 	
 	public static void main(String[] args) {
 		SchedulerContextHpm sc = new SchedulerContextHpm();
-		sc.loginhpm("dongkai3", "dk@#0213");
+		sc.loginhpm("dongkai3", "xxxxxx");
 		
 //		String name = "dw/mds/mds_mbportal_client_news_column";
 //		String name = "dw/mds/mds_mbportal_client_bhv_terminate";
